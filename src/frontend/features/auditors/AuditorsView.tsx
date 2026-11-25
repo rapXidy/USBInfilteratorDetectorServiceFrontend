@@ -67,6 +67,7 @@ export function AuditorsView() {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead>User</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Last login</TableHead>
@@ -88,6 +89,7 @@ export function AuditorsView() {
                       </div>
                       <div className="text-xs text-muted-foreground">{u.username}</div>
                     </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{u.email || '—'}</TableCell>
                     <TableCell>
                       <Badge variant={u.role === AuditorRole.Admin ? 'default' : 'secondary'}>{auditorRoleLabel[u.role]}</Badge>
                     </TableCell>

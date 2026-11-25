@@ -42,6 +42,7 @@ export interface AuditorUser {
   id: string
   username: string
   displayName: string
+  email: string | null
   role: AuditorRole
   isActive: boolean
   createdAt: string
@@ -53,6 +54,7 @@ export interface CreateAuditorUserRequest {
   password: string
   displayName: string
   role: AuditorRole
+  email?: string | null
 }
 
 export interface UpdateAuditorUserRequest {
@@ -61,6 +63,7 @@ export interface UpdateAuditorUserRequest {
   isActive: boolean
   /** Optional password reset; omit/null to keep the current one. */
   password?: string | null
+  email?: string | null
 }
 
 /** GET /api/subscription — enums are numeric here. */

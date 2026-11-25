@@ -25,6 +25,11 @@ import { FormField, fieldA11y } from '@/frontend/components/FormField'
 const schema = z.object({
   username: z.string().trim().min(1, 'Username is required'),
   displayName: z.string().trim().min(1, 'Display name is required'),
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || z.string().email().safeParse(v).success, 'Enter a valid email'),
   // Selects deliver strings; converted to the numeric enum on submit.
   role: z.enum(['0', '1', '2']),
   password: z.string().optional(),
@@ -59,7 +64,14 @@ export function AuditorFormDialog({ open, onOpenChange, user }: AuditorFormDialo
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { username: '', displayName: '', role: String(AuditorRole.Auditor) as FormValues['role'], password: '', isActive: true },
+    defaultValues: {
+      username: '',
+      displayName: '',
+      email: '',
+      role: String(AuditorRole.Auditor) as FormValues['role'],
+      password: '',
+      isActive: true,
+    },
   })
 
   useEffect(() => {
@@ -67,6 +79,7 @@ export function AuditorFormDialog({ open, onOpenChange, user }: AuditorFormDialo
       reset({
         username: user?.username ?? '',
         displayName: user?.displayName ?? '',
+        email: user?.email ?? '',
         role: String(user?.role ?? AuditorRole.Auditor) as FormValues['role'],
         password: '',
         isActive: user?.isActive ?? true,
@@ -88,9 +101,10 @@ export function AuditorFormDialog({ open, onOpenChange, user }: AuditorFormDialo
       toast.success(editing ? 'Auditor user updated' : 'Auditor user created')
       onOpenChange(false)
     }
+    const email = v.email?.trim() ? v.email.trim() : null
     if (editing && user) {
       update.mutate(
-        { id: user.id, body: { displayName: v.displayName, role, isActive: v.isActive, password: password || null } },
+        { id: user.id, body: { displayName: v.displayName, role, isActive: v.isActive, password: password || null, email } },
         { onSuccess: done },
       )
     } else {
@@ -98,7 +112,7 @@ export function AuditorFormDialog({ open, onOpenChange, user }: AuditorFormDialo
         setError('password', { message: 'Password must be at least 8 characters' })
         return
       }
-      create.mutate({ username: v.username, displayName: v.displayName, role, password }, { onSuccess: done })
+      create.mutate({ username: v.username, displayName: v.displayName, role, password, email }, { onSuccess: done })
     }
   })
 
@@ -124,6 +138,14 @@ export function AuditorFormDialog({ open, onOpenChange, user }: AuditorFormDialo
           </FormField>
           <FormField id="a-display" label="Display name" error={errors.displayName?.message}>
             <Input {...register('displayName')} {...fieldA11y('a-display', errors.displayName?.message)} />
+          </FormField>
+          <FormField
+            id="a-email"
+            label="Email (optional)"
+            hint="Used for welcome and high-risk USB alerts."
+            error={errors.email?.message}
+          >
+            <Input type="email" {...register('email')} {...fieldA11y('a-email', errors.email?.message)} autoComplete="email" />
           </FormField>
           <FormField id="a-role" label="Role" error={errors.role?.message}>
             <Select {...register('role')} {...fieldA11y('a-role', errors.role?.message)}>
