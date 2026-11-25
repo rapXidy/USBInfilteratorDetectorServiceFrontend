@@ -1,7 +1,11 @@
 import { useState } from 'react'
-import { Pencil, Plus, UserX, Users } from 'lucide-react'
+import { KeyRound, Pencil, Plus, UserX, Users } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAuditorUsers, useDeactivateAuditorUser } from '@/backend/hooks/useAuditorUsers'
+import {
+  useAuditorUsers,
+  useDeactivateAuditorUser,
+  useResetAuditorUserPassword,
+} from '@/backend/hooks/useAuditorUsers'
 import { AuditorRole, auditorRoleLabel } from '@/backend/types'
 import type { AuditorUser } from '@/backend/types'
 import { Badge } from '@/frontend/components/ui/badge'
@@ -17,14 +21,16 @@ import { formatDate, formatDateTime } from '@/frontend/lib/date'
 import { useAuthStore } from '@/frontend/store/authStore'
 import { AuditorFormDialog } from './AuditorFormDialog'
 
-/** Auditor users management (Admin only): list, create, edit role/status/password, deactivate. */
+/** Auditor users management (Admin only): list, create, edit, email password reset, deactivate. */
 export function AuditorsView() {
   const users = useAuditorUsers()
   const deactivate = useDeactivateAuditorUser()
+  const resetPassword = useResetAuditorUserPassword()
   const currentAuditorId = useAuthStore((s) => s.auditorId)
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<AuditorUser | null>(null)
   const [deactivating, setDeactivating] = useState<AuditorUser | null>(null)
+  const [resetting, setResetting] = useState<AuditorUser | null>(null)
 
   const openCreate = () => {
     setEditing(null)
@@ -42,7 +48,7 @@ export function AuditorsView() {
     <>
       <PageHeader
         title="Auditor users"
-        description="People who can sign in to this organization. Passwords are never displayed."
+        description="People who can sign in to this organization. Passwords are emailed, never displayed."
         actions={addButton}
       />
 
@@ -114,6 +120,16 @@ export function AuditorsView() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          disabled={!u.email || !u.isActive}
+                          title={!u.email ? 'Email is required to reset password' : 'Email temporary password'}
+                          aria-label={`Email temporary password to ${u.username}`}
+                          onClick={() => setResetting(u)}
+                        >
+                          <KeyRound className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="text-destructive hover:text-destructive"
                           disabled={!u.isActive || isSelf}
                           title={isSelf ? 'You cannot deactivate your own account' : undefined}
@@ -133,6 +149,35 @@ export function AuditorsView() {
       </Card>
 
       <AuditorFormDialog open={formOpen} onOpenChange={setFormOpen} user={editing} />
+
+      <ConfirmDialog
+        open={!!resetting}
+        onOpenChange={(o) => {
+          if (!o) {
+            setResetting(null)
+            resetPassword.reset()
+          }
+        }}
+        title="Email temporary password?"
+        description={
+          <>
+            A new temporary password will be emailed to <span className="font-semibold">{resetting?.email}</span> for{' '}
+            <span className="font-semibold">{resetting?.username}</span>. Existing sessions for that user will be signed out.
+          </>
+        }
+        confirmLabel="Send email"
+        loading={resetPassword.isPending}
+        error={resetPassword.error}
+        onConfirm={() =>
+          resetting &&
+          resetPassword.mutate(resetting.id, {
+            onSuccess: () => {
+              toast.success('Temporary password emailed')
+              setResetting(null)
+            },
+          })
+        }
+      />
 
       <ConfirmDialog
         open={!!deactivating}

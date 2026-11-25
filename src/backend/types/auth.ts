@@ -7,6 +7,23 @@ export interface LoginRequest {
   password: string
 }
 
+/** POST /api/auth/forgot-password body. */
+export interface ForgotPasswordRequest {
+  corpCode: string
+  username: string
+}
+
+/** POST /api/auth/forgot-password response (always generic). */
+export interface ForgotPasswordResponse {
+  message: string
+}
+
+/** POST /api/auth/change-password body. */
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+}
+
 /** POST /api/auth/refresh and /api/auth/logout body. */
 export interface RefreshRequest {
   refreshToken: string

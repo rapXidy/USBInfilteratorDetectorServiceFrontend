@@ -72,7 +72,7 @@ src/
 - Clean, professional, centred card.
 - Fields: CorpCode, Username, Password.
 - Show clear error messages (invalid credentials, organisation inactive, etc.).
-- “Forgot password” can be a future placeholder.
+- Link to `/forgot-password` (CorpCode + username → temporary password email; generic success message).
 
 ### 4.2 Dashboard (home after login)
 Organisation-scoped overview:
@@ -105,8 +105,10 @@ The most important screen for auditors. Must show:
 
 ### 4.6 Auditors (Admin only)
 - List of users who can access the dashboard.
-- Invite / create, edit role, activate/deactivate.
-- Never show password hashes.
+- Create: username, display name, **email (required)**, and role — **no password field**. The API generates a temporary password and emails it to the auditor.
+- Edit: role, email, active flag.
+- **Email temporary password** action calls `POST /api/auditor-users/{id}/reset-password`.
+- Never show password hashes or temporary passwords in the UI.
 
 ### 4.7 Subscription / Plan Status
 - Current plan name and status (Free Trial / Pro / etc.).
@@ -114,8 +116,8 @@ The most important screen for auditors. Must show:
 - Clear message that paid plans and Stripe checkout are coming later.
 - Feature flags reflected in the UI (e.g. “Webhooks available on Pro plan”).
 
-### 4.8 Settings / Profile (optional)
-- Change own password.
+### 4.8 Change password / Profile
+- `/change-password` for signed-in auditors (current + new + confirm).
 - View organisation details (read-only for non-admins).
 
 ---
@@ -144,14 +146,18 @@ Key endpoints the frontend will call:
 | Method | Path | Purpose |
 |--------|------|---------|
 | POST | `/api/auth/login` | Authenticate |
+| POST | `/api/auth/forgot-password` | Request temporary password email |
+| POST | `/api/auth/change-password` | Change own password |
 | POST | `/api/auth/refresh` | Silent token refresh |
 | GET | `/api/sessions` | List sessions (query params for filters) |
 | GET | `/api/sessions/{id}` | Full session detail + reasons + events |
 | GET | `/api/alerts` | Recent alerts |
 | GET | `/api/devices` | Allowed devices |
 | POST/PUT/DELETE | `/api/devices` | Manage allowed devices |
-| GET | `/api/auditors` | List auditors (Admin) |
-| POST/PUT | `/api/auditors` | Manage auditors |
+| GET | `/api/auditor-users` | List auditors (Admin) |
+| POST | `/api/auditor-users` | Create auditor (no password; temp password emailed) |
+| PUT | `/api/auditor-users/{id}` | Update auditor |
+| POST | `/api/auditor-users/{id}/reset-password` | Email temporary password (Admin) |
 | GET | `/api/subscription` | Current plan status |
 | GET | `/api/dashboard/summary` | Aggregated numbers for the home dashboard |
 

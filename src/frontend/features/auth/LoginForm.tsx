@@ -71,6 +71,11 @@ export function LoginForm() {
       </form>
       <div className="mt-6 space-y-1 text-center text-sm text-slate-600">
         <p>
+          <Link to="/forgot-password" className="font-medium text-[#031e37] underline-offset-4 hover:underline">
+            Forgot password?
+          </Link>
+        </p>
+        <p>
           New organization?{' '}
           <Link to="/onboarding" className="font-medium text-[#031e37] underline-offset-4 hover:underline">
             Start onboarding

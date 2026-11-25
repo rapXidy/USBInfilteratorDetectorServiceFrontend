@@ -46,6 +46,7 @@ All multi-tenant tables are scoped by `OrganizationId` / `CorpCode`.
 - Username (unique per organisation)
 - PasswordHash
 - DisplayName
+- Email (required for Admin-created users; used for welcome and alert emails)
 - Role (`Admin` | `Auditor` | `Viewer`)
 - IsActive
 - CreatedAt
@@ -133,6 +134,14 @@ All multi-tenant tables are scoped by `OrganizationId` / `CorpCode`.
   Body: `{ "corpCode": "...", "username": "...", "password": "..." }`  
   Returns: access token + refresh token.
 
+- `POST /api/auth/forgot-password` (anonymous, rate-limited)  
+  Body: `{ "corpCode": "...", "username": "..." }`  
+  Always returns a generic success message. When an active auditor with email exists, a temporary password is generated, hashed (Argon2id), emailed, and refresh tokens are revoked.
+
+- `POST /api/auth/change-password` (authenticated auditor)  
+  Body: `{ "currentPassword": "...", "newPassword": "..." }`  
+  Updates the hash and revokes that auditor’s refresh tokens.
+
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 
@@ -157,6 +166,8 @@ Every data query **must** be filtered by the Organisation that belongs to the au
 
 ### 4.2 Authentication
 - `POST /api/auth/login`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/change-password`
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 
@@ -172,10 +183,11 @@ Every data query **must** be filtered by the Organisation that belongs to the au
 - `DELETE /api/devices/{id}` (soft-delete preferred)
 
 ### 4.5 Auditors (Admin role only)
-- `GET /api/auditors`
-- `POST /api/auditors`
-- `PUT /api/auditors/{id}`
-- `DELETE /api/auditors/{id}` (or deactivate)
+- `GET /api/auditor-users`
+- `POST /api/auditor-users` — create auditor (**no password in the request body**). The API generates a temporary password, stores it as `PasswordHash` (Argon2id), and emails it to the auditor’s `Email` (required).
+- `PUT /api/auditor-users/{id}` — update profile/role/active flag
+- `POST /api/auditor-users/{id}/reset-password` — email a new temporary password (requires auditor email)
+- `DELETE /api/auditor-users/{id}` (soft-deactivate)
 
 ### 4.6 Subscription
 - `GET /api/subscription` — current plan and status  
@@ -188,21 +200,22 @@ Every data query **must** be filtered by the Organisation that belongs to the au
 
 ## 5. Notification Pipeline
 
-When a new high-risk session or an “audit settings missing” alert is persisted:
+Outbound email uses MailKit + Gmail SMTP. Events enqueue `NotificationsLog` (`Pending`); a background worker sends with configurable retries (`Notifications:Dispatch`).
 
-1. Load the organisation’s notification preferences.
-2. Queue an email and/or fire a configured webhook.
-3. Record the attempt and outcome in `NotificationsLog`.
+Triggered emails:
 
-Email content should include:
+1. **Onboarding complete** — CorpCode + API key to the organization email.
+2. **Auditor created** — welcome email to the new auditor including username, CorpCode, and the **temporary password** (shown once via email; never returned from the create API response).
+3. **Password reset** — temporary password email from forgot-password or Admin `reset-password`.
+4. **High-risk / incomplete audit** — active auditors with email, else organization email.
+
+High-risk email content should include:
 - Organisation name
 - Host + logged-in user
 - Device serial
 - Risk score
 - Top reasons (human-readable)
 - Direct deep-link to the session in the React dashboard
-
-Recommended development providers: Resend, Brevo, or Mailtrap.
 
 ---
 

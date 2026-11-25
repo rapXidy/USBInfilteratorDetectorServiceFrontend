@@ -1,12 +1,30 @@
 import { apiClient, refreshAuditorToken } from '../http/axiosClient'
 import { clearSession, getRefreshToken, setSession } from '../http/tokenStorage'
-import type { AuthTokenResponse, LoginRequest, SuperAdminLoginRequest } from '../types'
+import type {
+  AuthTokenResponse,
+  ChangePasswordRequest,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  LoginRequest,
+  SuperAdminLoginRequest,
+} from '../types'
 
 /** POST /api/auth/login — exchange CorpCode credentials for a JWT pair and store it (auditor session). */
 export async function login(body: LoginRequest): Promise<AuthTokenResponse> {
   const { data } = await apiClient.post<AuthTokenResponse>('/api/auth/login', body)
   setSession('auditor', data)
   return data
+}
+
+/** POST /api/auth/forgot-password — request a temporary password email (generic response). */
+export async function forgotPassword(body: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+  const { data } = await apiClient.post<ForgotPasswordResponse>('/api/auth/forgot-password', body)
+  return data
+}
+
+/** POST /api/auth/change-password — update the signed-in auditor password. */
+export async function changePassword(body: ChangePasswordRequest): Promise<void> {
+  await apiClient.post('/api/auth/change-password', body)
 }
 
 /** POST /api/superadmin/auth/login — platform login; stores the access token only (refreshToken is empty). */

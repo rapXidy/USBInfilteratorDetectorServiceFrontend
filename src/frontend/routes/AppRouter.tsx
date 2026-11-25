@@ -14,6 +14,7 @@ import { SuperAdminGuard } from './SuperAdminGuard'
 
 // Route-level pages are code-split.
 const LoginPage = lazy(() => import('@/frontend/pages/LoginPage'))
+const ForgotPasswordPage = lazy(() => import('@/frontend/pages/ForgotPasswordPage'))
 const SuperAdminLoginPage = lazy(() => import('@/frontend/pages/SuperAdminLoginPage'))
 const OnboardingPage = lazy(() => import('@/frontend/pages/OnboardingPage'))
 const DashboardPage = lazy(() => import('@/frontend/pages/DashboardPage'))
@@ -24,6 +25,7 @@ const AuditorsPage = lazy(() => import('@/frontend/pages/AuditorsPage'))
 const HrStaffPage = lazy(() => import('@/frontend/pages/HrStaffPage'))
 const SubscriptionPage = lazy(() => import('@/frontend/pages/SubscriptionPage'))
 const OrganizationPage = lazy(() => import('@/frontend/pages/OrganizationPage'))
+const ChangePasswordPage = lazy(() => import('@/frontend/pages/ChangePasswordPage'))
 const SuperAdminOrganizationsPage = lazy(() => import('@/frontend/pages/SuperAdminOrganizationsPage'))
 const SuperAdminOrganizationDetailPage = lazy(() => import('@/frontend/pages/SuperAdminOrganizationDetailPage'))
 const NotFoundPage = lazy(() => import('@/frontend/pages/NotFoundPage'))
@@ -63,6 +65,7 @@ export function AppRouter() {
 
           {/* Public — login uses a dedicated split layout (hero + form) */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route element={<AuthLayout />}>
             <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
@@ -77,6 +80,7 @@ export function AppRouter() {
               <Route path="/sessions/:id" element={<SessionDetailPage />} />
               <Route path="/subscription" element={<SubscriptionPage />} />
               <Route path="/organization" element={<OrganizationPage />} />
+              <Route path="/change-password" element={<ChangePasswordPage />} />
               <Route element={<RoleGuard allow={['Admin', 'Auditor']} />}>
                 <Route path="/devices" element={<DevicesPage />} />
                 <Route path="/hr-staff" element={<HrStaffPage />} />

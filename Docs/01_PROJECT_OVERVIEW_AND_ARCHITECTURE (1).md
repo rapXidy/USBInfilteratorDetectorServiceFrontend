@@ -34,7 +34,7 @@ The intellectual core remains an **explainable detector**: every alert carries h
 | Offline resilience | Local durable queue; sync when connectivity returns |
 | Multi-tenancy | Organisations identified by unique `CorpCode` |
 | Notifications | Email, webhook, or API callbacks to the security team |
-| Auditor authentication | Corporate Code + username + password (hashed at rest) |
+| Auditor authentication | Corporate Code + username + password (hashed at rest); Admin-created auditors receive a generated temporary password by email |
 | Subscription awareness | Free trial by default; paid plans enforced via feature flags |
 
 ---

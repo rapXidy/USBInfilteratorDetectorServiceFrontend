@@ -51,18 +51,16 @@ export interface AuditorUser {
 
 export interface CreateAuditorUserRequest {
   username: string
-  password: string
   displayName: string
   role: AuditorRole
-  email?: string | null
+  /** Required — temporary password is generated server-side and emailed here. */
+  email: string
 }
 
 export interface UpdateAuditorUserRequest {
   displayName: string
   role: AuditorRole
   isActive: boolean
-  /** Optional password reset; omit/null to keep the current one. */
-  password?: string | null
   email?: string | null
 }
 

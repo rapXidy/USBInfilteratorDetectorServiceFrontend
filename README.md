@@ -54,10 +54,11 @@ Vite loads `.env` at startup — restart `npm run dev` after changing it. Keep `
 | Path | Audience |
 |------|----------|
 | `/login` | Tenant auditor login (CorpCode + username + password) |
+| `/forgot-password` | Request temporary password email |
 | `/onboarding` | Public organization signup |
 | `/dashboard`, `/sessions`, `/sessions/:id` | Auditor dashboard and explainable session detail |
 | `/devices`, `/auditors`, `/hr-staff` | Tenant management (role-gated) |
-| `/subscription`, `/organization` | Plan and org profile |
+| `/subscription`, `/organization`, `/change-password` | Plan, org profile, and password change |
 | `/superadmin/login`, `/superadmin/organizations` | Platform SuperAdmin console |
 
 ## API integration notes
@@ -191,7 +192,7 @@ Protected routes are wrapped in an `AuthGuard`. Role-based rendering controls ac
 | `/sessions` | Filterable list of USB sessions | All authenticated |
 | `/sessions/:id` | Session detail + explainable reasons | All authenticated |
 | `/devices` | Allowed USB devices management | Auditor, Admin |
-| `/auditors` | Auditor user management | Admin only |
+| `/auditors` | Auditor user management (create without password; temp password emailed) | Admin only |
 | `/subscription` | Current plan status | All authenticated |
 
 ### Session Detail (most important screen)
@@ -249,12 +250,15 @@ All authenticated requests go to the central ASP.NET Core API. Key endpoints use
 | Method | Path | Purpose |
 |--------|------|---------|
 | `POST` | `/api/auth/login` | Login |
+| `POST` | `/api/auth/forgot-password` | Request temporary password email |
+| `POST` | `/api/auth/change-password` | Change own password |
+| `POST` | `/api/auditor-users/{id}/reset-password` | Admin email temporary password |
 | `POST` | `/api/auth/refresh` | Silent token refresh |
 | `GET` | `/api/sessions` | List sessions (with filters) |
 | `GET` | `/api/sessions/{id}` | Session detail + reasons + events |
 | `GET` | `/api/alerts` | Recent alerts |
 | `GET/POST/PUT/DELETE` | `/api/devices` | Allowed devices |
-| `GET/POST/PUT` | `/api/auditors` | Auditor management (Admin) |
+| `GET/POST/PUT/DELETE` | `/api/auditor-users` | Auditor management (Admin; create generates password and emails it) |
 | `GET` | `/api/subscription` | Current plan |
 | `GET` | `/api/dashboard/summary` | Dashboard aggregates |
 

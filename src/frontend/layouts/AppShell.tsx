@@ -4,6 +4,7 @@ import {
   Briefcase,
   Building2,
   CreditCard,
+  KeyRound,
   LayoutDashboard,
   ListChecks,
   LogOut,
@@ -38,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/auditors', label: 'Auditor users', icon: Users, roles: ['Admin'] },
   { to: '/subscription', label: 'Subscription', icon: CreditCard },
   { to: '/organization', label: 'Organization', icon: Building2 },
+  { to: '/change-password', label: 'Change password', icon: KeyRound },
 ]
 
 /** Sidebar link list, filtered by the signed-in role. */

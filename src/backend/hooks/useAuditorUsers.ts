@@ -3,6 +3,7 @@ import {
   createAuditorUser,
   deactivateAuditorUser,
   listAuditorUsers,
+  resetAuditorUserPassword,
   updateAuditorUser,
 } from '../services/auditorUsersService'
 import { queryKeys } from '../queryKeys'
@@ -28,6 +29,13 @@ export function useUpdateAuditorUser() {
   return useMutation<AuditorUser, unknown, { id: string; body: UpdateAuditorUserRequest }>({
     mutationFn: ({ id, body }) => updateAuditorUser(id, body),
     onSuccess: () => void qc.invalidateQueries({ queryKey: queryKeys.auditorUsers.all }),
+  })
+}
+
+/** Mutation for POST /api/auditor-users/{id}/reset-password. */
+export function useResetAuditorUserPassword() {
+  return useMutation<void, unknown, string>({
+    mutationFn: resetAuditorUserPassword,
   })
 }
 
